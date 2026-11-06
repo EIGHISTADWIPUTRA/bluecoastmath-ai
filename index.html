@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BluecoastMath – Pertemuan 1: Observasi Mangrove</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal:    #2bbcb0;
+      --teal-dk: #1a8a80;
+      --amber:   #f5a623;
+      --sand:    #fdf6e3;
+      --brown:   #6b4226;
+      --green:   #4caf50;
+      --red:     #e53935;
+      --sky:     #d0f0f8;
+      --white:   #ffffff;
+      --radius:  18px;
+      --shadow:  0 4px 20px rgba(0,0,0,.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(160deg, #b2ebf2 0%, #e8f5e9 50%, #fff9c4 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    header {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--sand);
+      border: 3px solid var(--brown);
+      border-radius: var(--radius);
+      padding: 14px 24px;
+      max-width: 540px; width: 100%;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+    header .bot-icon {
+      width: 54px; height: 54px;
+      background: var(--teal); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; flex-shrink: 0;
+      border: 3px solid var(--teal-dk);
+    }
+    header h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem; color: var(--teal-dk); line-height: 1.1;
+    }
+    header h1 span { color: var(--brown); }
+
+    .progress-wrap { max-width: 540px; width: 100%; margin-bottom: 14px; }
+    .progress-label {
+      font-size: .8rem; font-weight: 700; color: var(--brown);
+      margin-bottom: 5px; display: flex; justify-content: space-between;
+    }
+    .progress-track { height: 10px; background: #ddd; border-radius: 10px; overflow: hidden; }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--teal), var(--green));
+      border-radius: 10px; transition: width .5s ease; width: 0%;
+    }
+
+    .tagline {
+      background: var(--teal); color: var(--white);
+      font-weight: 700; font-size: .9rem;
+      border-radius: 40px; padding: 8px 20px;
+      margin-bottom: 18px; text-align: center;
+      max-width: 420px;
+      box-shadow: 0 2px 8px rgba(43,188,176,.35);
+    }
+
+    #chat-window {
+      background: var(--white);
+      border: 3px solid var(--teal);
+      border-radius: var(--radius);
+      max-width: 540px; width: 100%;
+      padding: 20px 16px 16px;
+      display: flex; flex-direction: column; gap: 14px;
+      box-shadow: var(--shadow);
+      min-height: 340px;
+      overflow-y: auto; max-height: 55vh;
+    }
+
+    .msg { display: flex; gap: 10px; align-items: flex-start; }
+    .msg.bot  { flex-direction: row; }
+    .msg.user { flex-direction: row-reverse; }
+    .avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .msg.bot  .avatar { background: var(--teal); border: 2px solid var(--teal-dk); }
+    .msg.user .avatar { background: var(--amber); border: 2px solid #c9880e; }
+    .bubble {
+      max-width: 78%; padding: 12px 16px; border-radius: 16px;
+      font-size: .93rem; line-height: 1.6;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    .msg.bot  .bubble { background: var(--sky); border-top-left-radius: 4px; color: #1a3c40; }
+    .msg.user .bubble { background: var(--amber); border-top-right-radius: 4px; color: var(--brown); font-weight: 700; }
+    .bubble.success { background: #e8f5e9; border: 2px solid var(--green); }
+    .bubble.hint    { background: #fff8e1; border: 2px solid var(--amber); }
+    .bubble.wrong   { background: #ffebee; border: 2px solid var(--red); }
+    .bubble.end     { background: linear-gradient(135deg,#e8f5e9,#d0f0f8); border: 2px solid var(--teal); text-align:center; }
+
+    .typing { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+    .typing span {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--teal);
+      animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); }
+      40%          { transform: translateY(-8px); }
+    }
+
+    .q-divider {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .75rem; color: #aaa; font-weight: 700; margin: 4px 0;
+    }
+    .q-divider::before, .q-divider::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
+
+    #input-area { max-width: 540px; width: 100%; display: flex; gap: 10px; margin-top: 14px; }
+    #user-input {
+      flex: 1; padding: 12px 18px;
+      border: 2.5px solid var(--teal); border-radius: 40px;
+      font-family: 'Nunito', sans-serif; font-size: .95rem;
+      outline: none; transition: border-color .2s;
+    }
+    #user-input:focus    { border-color: var(--teal-dk); }
+    #user-input:disabled { background: #f0f0f0; }
+    #send-btn {
+      background: var(--teal); color: var(--white); border: none;
+      border-radius: 40px; padding: 12px 22px;
+      font-family: 'Fredoka One', cursive; font-size: 1rem;
+      cursor: pointer; transition: background .2s, transform .1s;
+      box-shadow: 0 3px 10px rgba(43,188,176,.4);
+    }
+    #send-btn:hover    { background: var(--teal-dk); }
+    #send-btn:active   { transform: scale(.96); }
+    #send-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    #attempts-bar {
+      max-width: 540px; width: 100%;
+      display: flex; gap: 8px; align-items: center;
+      margin-top: 10px; font-size: .85rem; color: var(--brown); font-weight: 700;
+    }
+    .dot {
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #ddd; border: 2px solid #bbb; transition: background .3s;
+    }
+    .dot.used { background: var(--red); border-color: var(--red); }
+
+    #restart-btn {
+      display: none; margin-top: 16px;
+      background: var(--green); color: var(--white); border: none;
+      border-radius: 40px; padding: 12px 28px;
+      font-family: 'Fredoka One', cursive; font-size: 1rem;
+      cursor: pointer; box-shadow: 0 3px 10px rgba(76,175,80,.35);
+      transition: background .2s;
+    }
+    #restart-btn:hover { background: #388e3c; }
+
+    footer { margin-top: 24px; font-size: .78rem; color: #7a9e7e; text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="bot-icon">🤖</div>
+  <h1>Bertanya dengan<br><span>BluecoastMath</span></h1>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>🌿 Pertemuan 1 – Observasi Mangrove</span>
+    <span id="prog-text">0 / 3</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+</div>
+
+<div class="tagline">🌿 Matematika membantumu memahami, menjaga, dan melestarikan alam.</div>
+
+<div id="chat-window"></div>
+
+<div id="attempts-bar">
+  <span>Percobaan:</span>
+  <div class="dot" id="d1"></div>
+  <div class="dot" id="d2"></div>
+  <div class="dot" id="d3"></div>
+</div>
+
+<div id="input-area">
+  <input id="user-input" type="text" placeholder="Tulis jawabanmu di sini…" autocomplete="off"/>
+  <button id="send-btn">Kirim ➤</button>
+</div>
+
+<button id="restart-btn" onclick="restartChat()">🔄 Mulai Ulang</button>
+
+<footer>BluecoastMath AI Assistant © 2026 | Edukasi Mangrove Pulau Seliu</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA PERTANYAAN – PERTEMUAN 1 (3 SOAL OBSERVASI)
+// ═══════════════════════════════════════════════════════
+const FLOW = [
+  {
+    id: 1,
+    question: "Apa yang kamu lihat pada kawasan mangrove Pulau Seliu?",
+    keywords: [
+      "pohon mangrove","mangrove","kawasan hijau","hijau",
+      "pesisir","pantai","tidak ditumbuhi","tumbuh",
+      "sepanjang","kawasan","banyak","pohon","hutan"
+    ],
+    minMatch: 1,
+    appreciation:
+      "Wah, kamu sudah berhasil melihat hal yang penting sekali, " +
+      "itu berarti Pulau Seliu punya kekayaan alam yang luar biasa dan patut kita jaga bersama. " +
+      "Kamu hebat sudah memperhatikan dengan seksama! 🌊 Mari kita amati lebih dalam lagi.",
+    hints: [
+      "Hmm, coba bayangkan kamu sedang berdiri di tepi Pulau Seliu dan memandang ke arah pantai. " +
+      "Apa yang kamu lihat di sekitar garis pantai atau perairan? Apakah ada pohon-pohon atau kawasan hijau di sana? 👀",
+      "Yuk coba lagi! Perhatikan kawasan di sekitar perairan — adakah pohon-pohon yang tumbuh di tepi pantai? " +
+      "Atau mungkin ada bagian kawasan yang terlihat berbeda satu sama lain? 🌱"
+    ],
+    revealHint:
+      "Di kawasan mangrove Pulau Seliu biasanya terlihat banyak pohon mangrove yang tumbuh di sepanjang pesisir, " +
+      "ada kawasan hijau di dekat pantai, serta ada bagian yang tidak ditumbuhi mangrove."
+  },
+  {
+    id: 2,
+    question: "Menurutmu, mengapa ada bagian yang berbeda dari kawasan mangrove?",
+    keywords: [
+      "tambak","aktivitas manusia","manusia","berkurang",
+      "tidak semua","berubah","rusak","terganggu","hilang",
+      "ditebang","alih fungsi","penebangan","kegiatan",
+      "digunakan","diubah","perubahan"
+    ],
+    minMatch: 1,
+    appreciation:
+      "Hebat, pengamatanmu sangat teliti! 🔍 Setiap bagian yang kamu lihat bisa menjadi petunjuk untuk memahami " +
+      "kondisi mangrove di Pulau Seliu. Mari kita amati lebih dalam lagi.",
+    hints: [
+      "Coba pikirkan siapa yang mungkin tinggal atau bekerja di sekitar kawasan mangrove itu. " +
+      "Apakah ada kegiatan manusia di sana yang bisa mengubah kondisi kawasan tersebut? 🤔",
+      "Hampir! Bayangkan kalau suatu kawasan mangrove berubah — misalnya jadi lahan tambak atau ada pohon yang ditebang. " +
+      "Menurutmu, siapa atau apa yang bisa menyebabkan hal itu terjadi? 🏗️"
+    ],
+    revealHint:
+      "Perbedaan kawasan mangrove biasanya terjadi karena: sebagian kawasan berubah menjadi tambak, " +
+      "tidak semua area cocok untuk ditumbuhi mangrove, ada aktivitas manusia di kawasan tersebut, " +
+      "atau beberapa bagian mangrove memang sudah berkurang."
+  },
+  {
+    id: 3,
+    question: "Mengapa kondisi mangrove perlu diperhatikan?",
+    keywords: [
+      "abrasi","habitat","hewan","lingkungan","pesisir",
+      "melindungi","ekosistem","alam","iklim","banjir",
+      "menjaga","lestari","pantai","makhluk hidup",
+      "tempat tinggal","berubah","berkurang","jumlah"
+    ],
+    minMatch: 1,
+    // Kata vague yang butuh arahan lebih spesifik
+    tooVagueKeywords: [
+      "sangat penting","penting sekali","perlu dijaga",
+      "harus dijaga","harus diperhatikan","wajib dijaga"
+    ],
+    // Semua kata yang kira-kira hanya bilang "penting" tanpa alasan
+    vaguePhrases: ["penting","perlu diperhatikan","perlu dijaga"],
+    appreciation:
+      "Jawaban yang sangat baik! 🌿 Mangrove memiliki banyak peran penting bagi kehidupan di wilayah pesisir. " +
+      "Semangat terus untuk menggali lebih dalam mengapa mangrove sepenting itu ya! " +
+      "Semakin baik kita memahami manfaatnya, semakin mudah kita menjaga kelestariannya.",
+    hints: [
+      "Kamu sudah di jalur yang benar! Coba sekarang pikirkan lebih spesifik: " +
+      "mangrove itu melindungi apa ya? Atau hewan-hewan apa yang tinggal di sana? " +
+      "Atau bagaimana jika jumlah mangrove terus berkurang? 🦀",
+      "Hampir! Coba arahkan jawabanmu ke salah satu dari ini: " +
+      "apakah mangrove melindungi pantai dari sesuatu? Apakah mangrove menjadi tempat tinggal makhluk hidup? " +
+      "Atau apakah kondisi mangrove bisa berubah dari waktu ke waktu? 🌊"
+    ],
+    vagueHint:
+      "Kamu sudah benar bahwa mangrove itu penting! Tapi coba jelaskan lebih lanjut — " +
+      "penting untuk apa ya? Apakah mangrove melindungi pantai dari abrasi, menjadi tempat tinggal hewan, " +
+      "atau mungkin karena jumlahnya bisa berubah dari waktu ke waktu? Coba arahkan jawabanmu ke sana! 🌱",
+    revealHint:
+      "Kondisi mangrove perlu diperhatikan karena: mangrove melindungi pantai dari abrasi, " +
+      "menjadi habitat berbagai hewan, sangat penting bagi lingkungan pesisir, " +
+      "dan jumlah mangrove dapat berubah dari waktu ke waktu jika tidak dijaga."
+  }
+];
+
+const MAX_HINTS = 2;
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let currentQ    = 0;
+let attempts    = 0;
+let sessionDone = false;
+
+const win     = document.getElementById("chat-window");
+const input   = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+const restBtn = document.getElementById("restart-btn");
+const progFill= document.getElementById("prog-fill");
+const progTxt = document.getElementById("prog-text");
+
+// ═══════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════
+function scrollBottom() { win.scrollTop = win.scrollHeight; }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function addDivider(label) {
+  const d = document.createElement("div");
+  d.className = "q-divider";
+  d.textContent = label;
+  win.appendChild(d);
+  scrollBottom();
+}
+
+function addMsg(who, html, extraClass = "") {
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + who;
+  const av = document.createElement("div");
+  av.className = "avatar";
+  av.textContent = who === "bot" ? "🤖" : "🧒";
+  const bub = document.createElement("div");
+  bub.className = "bubble " + extraClass;
+  bub.innerHTML = html;
+  wrap.appendChild(av);
+  wrap.appendChild(bub);
+  win.appendChild(wrap);
+  scrollBottom();
+}
+
+function showTyping() {
+  const wrap = document.createElement("div");
+  wrap.className = "msg bot"; wrap.id = "typing-indicator";
+  const av = document.createElement("div");
+  av.className = "avatar"; av.textContent = "🤖";
+  const bub = document.createElement("div");
+  bub.className = "bubble";
+  bub.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(av); wrap.appendChild(bub);
+  win.appendChild(wrap); scrollBottom();
+}
+
+function removeTyping() {
+  const el = document.getElementById("typing-indicator");
+  if (el) el.remove();
+}
+
+function updateDots() {
+  for (let i = 1; i <= 3; i++) {
+    const d = document.getElementById("d" + i);
+    d.className = "dot" + (i <= attempts ? " used" : "");
+  }
+}
+
+function resetDots() {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById("d" + i).className = "dot";
+  }
+}
+
+function updateProgress() {
+  const pct = Math.round((currentQ / FLOW.length) * 100);
+  progFill.style.width = pct + "%";
+  progTxt.textContent  = currentQ + " / " + FLOW.length;
+}
+
+function normalize(s) {
+  return s.toLowerCase().replace(/[.,!?;:]/g, "").replace(/\s+/g, " ").trim();
+}
+
+function isCorrect(answer, q) {
+  const a = normalize(answer);
+  let matched = 0;
+  for (const kw of q.keywords) {
+    if (a.includes(normalize(kw))) matched++;
+  }
+  return matched >= q.minMatch;
+}
+
+// Cek jawaban terlalu vague untuk soal 3
+// (hanya bilang "penting" tapi tidak ada alasan spesifik)
+function isTooVague(answer, q) {
+  if (!q.tooVagueKeywords) return false;
+  const a = normalize(answer);
+
+  // Cek apakah ada kata vague
+  const hasVague = q.tooVagueKeywords.some(kw => a.includes(normalize(kw)));
+  const hasSimpleVague = q.vaguePhrases && q.vaguePhrases.some(kw => {
+    const words = a.split(" ");
+    // Jawaban pendek (< 6 kata) yang hanya berisi frasa vague
+    return words.length < 6 && a.includes(normalize(kw));
+  });
+
+  if (!hasVague && !hasSimpleVague) return false;
+
+  // Cek apakah ada keyword spesifik (selain kata penting/perlu/harus)
+  const specificKw = q.keywords.filter(kw =>
+    !["penting","lingkungan","alam"].some(v => normalize(kw) === v)
+  );
+  const hasSpecific = specificKw.some(kw => a.includes(normalize(kw)));
+  return !hasSpecific;
+}
+
+// ═══════════════════════════════════════════════════════
+//  TANYA PERTANYAAN
+// ═══════════════════════════════════════════════════════
+async function askQuestion(idx, withDelay) {
+  withDelay = withDelay !== false;
+  if (withDelay) await sleep(700);
+  const q = FLOW[idx];
+  addDivider("Pertanyaan " + (idx + 1) + " dari " + FLOW.length);
+  await sleep(300);
+  showTyping(); await sleep(1000); removeTyping();
+  addMsg("bot", "<strong>" + q.question + "</strong>");
+  attempts = 0;
+  resetDots();
+  sendBtn.disabled = false;
+  input.disabled   = false;
+  input.focus();
+}
+
+// ═══════════════════════════════════════════════════════
+//  HANDLE JAWABAN
+// ═══════════════════════════════════════════════════════
+async function handleAnswer(text) {
+  const q = FLOW[currentQ];
+
+  // --- Jawaban terlalu vague (khusus soal 3) ---
+  if (isTooVague(text, q)) {
+    attempts++;
+    updateDots();
+    showTyping(); await sleep(900); removeTyping();
+    if (attempts <= MAX_HINTS) {
+      addMsg("bot", q.vagueHint, "hint");
+      sendBtn.disabled = false;
+      input.disabled   = false;
+      input.focus();
+    } else {
+      await revealAndContinue(q);
+    }
+    return;
+  }
+
+  // --- Jawaban BENAR ---
+  if (isCorrect(text, q)) {
+    showTyping(); await sleep(900); removeTyping();
+    addMsg("bot", q.appreciation, "success");
+    currentQ++;
+    updateProgress();
+
+    if (currentQ >= FLOW.length) {
+      await sleep(800);
+      showTyping(); await sleep(1100); removeTyping();
+      addMsg("bot",
+        "🎉 <strong>Luar biasa!</strong> Kamu telah berhasil melakukan pengamatan awal tentang kondisi mangrove Pulau Seliu.<br><br>" +
+        "Seorang peneliti selalu memulai dengan mengamati dan mengajukan pertanyaan. " +
+        "Pada kegiatan berikutnya, kita akan mencari tahu lebih banyak tentang perubahan yang terjadi pada kawasan mangrove ini. 🌿🌊",
+        "end"
+      );
+      sessionDone = true;
+      sendBtn.disabled = true;
+      input.disabled   = true;
+      restBtn.style.display = "block";
+      updateProgress();
+    } else {
+      await askQuestion(currentQ);
+    }
+
+  // --- Jawaban SALAH ---
+  } else {
+    attempts++;
+    updateDots();
+    showTyping(); await sleep(900); removeTyping();
+
+    if (attempts <= MAX_HINTS) {
+      addMsg("bot", q.hints[attempts - 1], "hint");
+      sendBtn.disabled = false;
+      input.disabled   = false;
+      input.focus();
+    } else {
+      await revealAndContinue(q);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  REVEAL & LANJUT (setelah 3x salah)
+// ═══════════════════════════════════════════════════════
+async function revealAndContinue(q) {
+  addMsg("bot",
+    "Tidak apa-apa, kita belajar bersama! 😊<br><br>" +
+    "Yuk kita lihat: <em>" + q.revealHint + "</em><br><br>" +
+    "Tetap semangat ya! 💪",
+    "wrong"
+  );
+  currentQ++;
+  updateProgress();
+  await sleep(600);
+
+  if (currentQ >= FLOW.length) {
+    showTyping(); await sleep(1100); removeTyping();
+    addMsg("bot",
+      "🌿 Kamu sudah menyelesaikan semua pertanyaan Pertemuan 1! Tetap semangat belajar ya.<br><br>" +
+      "Pada kegiatan berikutnya, kita akan mencari tahu lebih banyak tentang perubahan yang terjadi pada kawasan mangrove ini. 🌊",
+      "end"
+    );
+    sessionDone = true;
+    sendBtn.disabled = true;
+    input.disabled   = true;
+    restBtn.style.display = "block";
+    updateProgress();
+  } else {
+    await askQuestion(currentQ);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  SEND
+// ═══════════════════════════════════════════════════════
+async function send() {
+  const text = input.value.trim();
+  if (!text || sessionDone) return;
+  input.value = "";
+  addMsg("user", text);
+  sendBtn.disabled = true;
+  input.disabled   = true;
+  await handleAnswer(text);
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+function startChat() {
+  win.innerHTML = "";
+  currentQ    = 0;
+  attempts    = 0;
+  sessionDone = false;
+  resetDots();
+  updateProgress();
+  sendBtn.disabled = true;
+  input.disabled   = true;
+  restBtn.style.display = "none";
+
+  setTimeout(async () => {
+    showTyping(); await sleep(1200); removeTyping();
+    addMsg("bot",
+      "Halo! Selamat datang di <strong>Pertemuan 1</strong> bersama <strong>BluecoastMath</strong>! 🌿<br><br>" +
+      "Pada sesi ini kita akan bersama-sama mengamati kondisi mangrove di Pulau Seliu.<br>" +
+      "Tidak ada jawaban yang salah sepenuhnya — tuliskan apa yang kamu pikirkan dengan kata-katamu sendiri! 😊<br><br>" +
+      "Yuk kita mulai!"
+    );
+    await askQuestion(0, false);
+  }, 400);
+}
+
+function restartChat() { startChat(); }
+
+sendBtn.addEventListener("click", send);
+input.addEventListener("keydown", e => { if (e.key === "Enter") send(); });
+
+startChat();
+</script>
+</body>
+</html>
