@@ -1,0 +1,11 @@
+{
+  "name": "bluecoastmath-ai",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env.local dev-server.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
